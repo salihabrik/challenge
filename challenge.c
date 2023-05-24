@@ -1,125 +1,97 @@
 #include <stdio.h>
-
 #include <stdlib.h>
 #include <time.h>
 
-#define ROWS 4
-#define COLS 4
-#define TOTAL_CARDS (ROWS * COLS / 2)
+#define BOARD_SIZE 4
 
-
-typedef struct {
-    int value;
+struct Card {
+    char symbol;
     int isMatched;
     int isRevealed;
-} Card;
+};
 
+void initializeBoard(struct Card board[BOARD_SIZE][BOARD_SIZE]) {
+    int i, j;
+    char symbols[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+    int symbolCount = 0;
 
-void displayBoard(Card board[][COLS]) {
-    printf("\n");
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
+    for (i = 0; i < BOARD_SIZE; i++) {
+        for (j = 0; j < BOARD_SIZE; j++) {
+            board[i][j].symbol = symbols[symbolCount];
+            board[i][j].isMatched = 0;
+            board[i][j].isRevealed = 0;
+            symbolCount++;
+        }
+    }
+}
+
+void shuffleBoard(struct Card board[BOARD_SIZE][BOARD_SIZE]) {
+    int i, j;
+    srand(time(NULL));
+
+    for (i = 0; i < BOARD_SIZE; i++) {
+        for (j = 0; j < BOARD_SIZE; j++) {
+            int randomRow = rand() % BOARD_SIZE;
+            int randomCol = rand() % BOARD_SIZE;
+            struct Card temp = board[i][j];
+            board[i][j] = board[randomRow][randomCol];
+            board[randomRow][randomCol] = temp;
+        }
+    }
+}
+
+void displayBoard(struct Card board[BOARD_SIZE][BOARD_SIZE]) {
+    int i, j;
+
+    for (i = 0; i < BOARD_SIZE; i++) {
+        for (j = 0; j < BOARD_SIZE; j++) {
             if (board[i][j].isRevealed) {
-                printf("%2d ", board[i][j].value);
+                printf("%c ", board[i][j].symbol);
             } else {
-                printf(" * ");
+                printf("* ");
             }
         }
         printf("\n");
     }
 }
 
-
-void swap(int* a, int* b) {
-    int temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-
-void generateCards(Card cards[]) {
-    for (int i = 0; i < TOTAL_CARDS; i++) {
-        cards[i].value = i + 1;
-        cards[i].isMatched = 0;
-        cards[i].isRevealed = 0;
-    }
-    
-    for (int i = 0; i < TOTAL_CARDS; i++) {
-        int randomIndex = rand() % TOTAL_CARDS;
-        swap(&cards[i].value, &cards[randomIndex].value);
-    }
-}
-
-
-int isGameComplete(Card board[][COLS]) {
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            if (!board[i][j].isMatched) {
-                return 0;
-            }
-        }
-    }
-    return 1;
-}
-
 int main() {
-    srand(time(NULL));
-
-    Card cards[TOTAL_CARDS];
-    generateCards(cards);
-
-    Card board[ROWS][COLS];
-
-    
-    int cardIndex = 0;
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            board[i][j] = cards[cardIndex++];
-        }
-    }
-
+    struct Card board[BOARD_SIZE][BOARD_SIZE];
     int score = 0;
-    displayBoard(board);
+    int moves = 0;
 
-    while (!isGameComplete(board)) {
+    initializeBoard(board);
+    shuffleBoard(board);
+
+    while (score < (BOARD_SIZE * BOARD_SIZE) / 2) {
         int row1, col1, row2, col2;
 
-        printf("\nEnter the coordinates of the first card: ");
+        printf("Enter coordinates of first card (row column): ");
         scanf("%d %d", &row1, &col1);
-        printf("Enter the coordinates of the second card: ");
+
+        if (row1 < 0 || row1 >= BOARD_SIZE || col1 < 0 || col1 >= BOARD_SIZE) {
+            printf("Invalid coordinates! Please try again.\n");
+            continue;
+        }
+
+        if (board[row1][col1].isMatched || board[row1][col1].isRevealed) {
+            printf("Invalid coordinates! Please try again.\n");
+            continue;
+        }
+
+        printf("Enter coordinates of second card (row column): ");
         scanf("%d %d", &row2, &col2);
 
-        if (row1 < 0 || row1 >= ROWS || col1 < 0 || col1 >= COLS || row2 < 0 || row2 >= ROWS || col2 < 0 || col2 >= COLS
- printf("Invalid coordinates! Please try again.\n");
+        if (row2 < 0 || row2 >= BOARD_SIZE || col2 < 0 || col2 >= BOARD_SIZE) {
+            printf("Invalid coordinates! Please try again.\n");
             continue;
         }
 
-        if (board[row1][col1].isMatched || board[row2][col2].isMatched || board[row1][col1].isRevealed || board[row2][col2].isRevealed) {
-            printf("Invalid selection! Please choose different cards.\n");
+        if (board[row2][col2].isMatched || board[row2][col2].isRevealed) {
+            printf("Invalid coordinates! Please try again.\n");
             continue;
         }
 
-        board[row1][col1].isRevealed = 1;
-        board[row2][col2].isReve
-                board[row2][col2].isRevealed = 1;
-        displayBoard(board);
-
-        if (board[row1][col1].value == board[row2][col2].value) {
-            printf("\nMatch found!\n");
-            board[row1][col1].isMatched = 1;
-            board[row2][col2].isMatched = 1;
-            score++;
-        } else {
-            printf("\nNo match!\n");
-            sleep(2);
-            board[row1][col1].isRevealed = 0;
-            board[row2][col2].isRevealed = 0;
-        }
-
-        displayBoard(board);
-    }
-
-    printf("\nCongratulations! You completed the game with a score of %d.\n", score);
-
-    return 0;
-}
+        if (board[row1][col1].symbol == board[row2][col2].symbol) {
+            printf("Match found!\)
+       
